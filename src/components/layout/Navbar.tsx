@@ -48,12 +48,12 @@ export default function Navbar() {
         ) : (
           <>
             <Link href="/login" style={{ color: 'var(--white-dim)', fontSize: '13px', textDecoration: 'none' }}>{t('nav.login')}</Link>
-            <Link href="/client/register" style={{
+            <Link href="/client/register?demo=true" style={{
               padding: '8px 20px', background: 'var(--gold)',
               border: '1px solid var(--gold)', color: 'var(--navy)',
               fontSize: '13px', fontWeight: 600, textDecoration: 'none',
             }}>{t('nav.hireTalent')}</Link>
-            <Link href="/candidate" style={{
+            <Link href="/candidate?demo=true" style={{
               padding: '8px 20px', border: '1px solid var(--border)',
               color: 'var(--white)', fontSize: '13px', textDecoration: 'none',
             }}>{t('nav.getHired')}</Link>
