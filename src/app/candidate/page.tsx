@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useLanguage } from '@/context/LanguageContext'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import AutoDemoModal from '@/components/AutoDemoModal'
 
 export default function CandidatePortal() {
   const { t, isRTL } = useLanguage()
+  const router = useRouter()
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', location: '', category: 'admin-sales', workPreference: 'home', experience: '' })
   const [cv, setCv] = useState<File | null>(null)
   const [voice, setVoice] = useState<File | null>(null)
@@ -15,16 +18,47 @@ export default function CandidatePortal() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [focused, setFocused] = useState('')
+  const [demoClosed, setDemoClosed] = useState(false)   // new state
+  const [countdown, setCountdown] = useState(5)          // for countdown display
+
   const cvRef = useRef<HTMLInputElement>(null)
   const voiceRef = useRef<HTMLInputElement>(null)
 
+  // Redirect after 5 seconds when demoClosed becomes true
+  useEffect(() => {
+    if (demoClosed) {
+      const timer = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            router.push('/');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [demoClosed, router]);
+
+  const handleModalClose = () => {
+    setDemoClosed(true);
+  };
+
   const handleInput = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
-  const inputStyle = (f: boolean): React.CSSProperties => ({ width: '100%', padding: '12px 16px', background: 'var(--navy-mid)', border: `1px solid ${f ? 'var(--gold)' : 'var(--border-soft)'}`, color: 'var(--white)', fontSize: '14px', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.2s' })
+  const inputStyle = (f: boolean): React.CSSProperties => ({
+    width: '100%', padding: '12px 16px', background: 'var(--navy-mid)',
+    border: `1px solid ${f ? 'var(--gold)' : 'var(--border-soft)'}`,
+    color: 'var(--white)', fontSize: '14px', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.2s',
+    opacity: demoClosed ? 0.6 : 1,           // visually indicate disabled
+    cursor: demoClosed ? 'not-allowed' : 'auto',
+  })
   const labelStyle: React.CSSProperties = { display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--white-dim)', marginBottom: '8px', letterSpacing: '0.5px', textTransform: 'uppercase' }
-  const selectStyle: React.CSSProperties = { ...inputStyle(false), cursor: 'pointer', appearance: 'none' as any, WebkitAppearance: 'none' as any }
+  const selectStyle: React.CSSProperties = { ...inputStyle(false), cursor: demoClosed ? 'not-allowed' : 'pointer', appearance: 'none' as any, WebkitAppearance: 'none' as any }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (demoClosed) return;   // prevent submission if demo is ending
     if (!voice) { setError('Voice introduction is required'); return }
     setLoading(true); setError('')
     try {
@@ -84,7 +118,7 @@ export default function CandidatePortal() {
             </div>
 
             {/* Pay Transparency */}
-            <div style={{ background: 'var(--navy-card)', border: '1px solid var(--border-soft)', padding: '24px', marginBottom: '32px', position: 'relative' }}>
+            <div style={{ background: 'var(--navy-card)', border: '1px solid var(--border-soft)', padding: '24px', marginBottom: '32px', position: 'relative', opacity: demoClosed ? 0.6 : 1 }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, var(--gold-dim), transparent)' }} />
               <div style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold-dim)', marginBottom: '16px', fontWeight: 500 }}>Pay Rates (transparent)</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -98,27 +132,99 @@ export default function CandidatePortal() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div><label style={labelStyle}>{t('candidate.fullName')}</label><input value={form.fullName} onChange={e => handleInput('fullName', e.target.value)} style={inputStyle(focused === 'name')} onFocus={() => setFocused('name')} onBlur={() => setFocused('')} required /></div>
+            {/* Demo ending message */}
+            {demoClosed && (
+              <div style={{
+                background: 'rgba(200,169,110,0.1)',
+                border: '1px solid var(--gold)',
+                padding: '12px',
+                marginBottom: '24px',
+                textAlign: 'center',
+                color: 'var(--gold)',
+                fontSize: '14px',
+                fontWeight: 500
+              }}>
+                Demo mode ended. Redirecting to homepage in {countdown} seconds...
+              </div>
+            )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <div><label style={labelStyle}>{t('candidate.email')}</label><input type="email" value={form.email} onChange={e => handleInput('email', e.target.value)} style={inputStyle(focused === 'email')} onFocus={() => setFocused('email')} onBlur={() => setFocused('')} required /></div>
-                <div><label style={labelStyle}>{t('candidate.phone')}</label><input type="tel" value={form.phone} onChange={e => handleInput('phone', e.target.value)} placeholder="+92 3XX XXXXXXX" style={inputStyle(focused === 'phone')} onFocus={() => setFocused('phone')} onBlur={() => setFocused('')} /></div>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={labelStyle}>{t('candidate.fullName')}</label>
+                <input
+                  value={form.fullName}
+                  onChange={e => !demoClosed && handleInput('fullName', e.target.value)}
+                  style={inputStyle(focused === 'name')}
+                  onFocus={() => !demoClosed && setFocused('name')}
+                  onBlur={() => setFocused('')}
+                  disabled={demoClosed}
+                  required
+                />
               </div>
 
-              <div><label style={labelStyle}>{t('candidate.location')}</label><input value={form.location} onChange={e => handleInput('location', e.target.value)} placeholder="City, Country" style={inputStyle(focused === 'loc')} onFocus={() => setFocused('loc')} onBlur={() => setFocused('')} /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={labelStyle}>{t('candidate.email')}</label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={e => !demoClosed && handleInput('email', e.target.value)}
+                    style={inputStyle(focused === 'email')}
+                    onFocus={() => !demoClosed && setFocused('email')}
+                    onBlur={() => setFocused('')}
+                    disabled={demoClosed}
+                    required
+                  />
+                </div>
+                <div>
+                  <label style={labelStyle}>{t('candidate.phone')}</label>
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={e => !demoClosed && handleInput('phone', e.target.value)}
+                    placeholder="+92 3XX XXXXXXX"
+                    style={inputStyle(focused === 'phone')}
+                    onFocus={() => !demoClosed && setFocused('phone')}
+                    onBlur={() => setFocused('')}
+                    disabled={demoClosed}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={labelStyle}>{t('candidate.location')}</label>
+                <input
+                  value={form.location}
+                  onChange={e => !demoClosed && handleInput('location', e.target.value)}
+                  placeholder="City, Country"
+                  style={inputStyle(focused === 'loc')}
+                  onFocus={() => !demoClosed && setFocused('loc')}
+                  onBlur={() => setFocused('')}
+                  disabled={demoClosed}
+                />
+              </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
                   <label style={labelStyle}>{t('candidate.category')}</label>
-                  <select value={form.category} onChange={e => handleInput('category', e.target.value)} style={selectStyle}>
+                  <select
+                    value={form.category}
+                    onChange={e => !demoClosed && handleInput('category', e.target.value)}
+                    style={selectStyle}
+                    disabled={demoClosed}
+                  >
                     <option value="admin-sales">{t('pricing.adminSales')}</option>
                     <option value="2d-design">{t('pricing.design')}</option>
                   </select>
                 </div>
                 <div>
                   <label style={labelStyle}>{t('candidate.workPreference')}</label>
-                  <select value={form.workPreference} onChange={e => handleInput('workPreference', e.target.value)} style={selectStyle}>
+                  <select
+                    value={form.workPreference}
+                    onChange={e => !demoClosed && handleInput('workPreference', e.target.value)}
+                    style={selectStyle}
+                    disabled={demoClosed}
+                  >
                     <option value="home">{t('pricing.home')}</option>
                     <option value="office">{t('pricing.office')}</option>
                   </select>
@@ -127,14 +233,46 @@ export default function CandidatePortal() {
 
               <div>
                 <label style={labelStyle}>{t('candidate.experience')}</label>
-                <textarea value={form.experience} onChange={e => handleInput('experience', e.target.value)} rows={4} placeholder="Describe your experience, skills, and what you bring to the role..." style={{ ...inputStyle(focused === 'exp'), resize: 'vertical' }} onFocus={() => setFocused('exp')} onBlur={() => setFocused('')} />
+                <textarea
+                  value={form.experience}
+                  onChange={e => !demoClosed && handleInput('experience', e.target.value)}
+                  rows={4}
+                  placeholder="Describe your experience, skills, and what you bring to the role..."
+                  style={{ ...inputStyle(focused === 'exp'), resize: 'vertical' }}
+                  onFocus={() => !demoClosed && setFocused('exp')}
+                  onBlur={() => setFocused('')}
+                  disabled={demoClosed}
+                />
               </div>
 
               {/* CV Upload */}
               <div>
                 <label style={labelStyle}>{t('candidate.cv')}</label>
-                <input ref={cvRef} type="file" accept=".pdf,.doc,.docx" onChange={e => setCv(e.target.files?.[0] || null)} style={{ display: 'none' }} />
-                <button type="button" onClick={() => cvRef.current?.click()} style={{ width: '100%', padding: '16px', background: 'var(--navy-mid)', border: `1px dashed ${cv ? 'var(--gold)' : 'var(--border-soft)'}`, color: cv ? 'var(--gold)' : 'var(--white-dim)', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+                <input
+                  ref={cvRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={e => !demoClosed && setCv(e.target.files?.[0] || null)}
+                  style={{ display: 'none' }}
+                  disabled={demoClosed}
+                />
+                <button
+                  type="button"
+                  onClick={() => !demoClosed && cvRef.current?.click()}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    background: 'var(--navy-mid)',
+                    border: `1px dashed ${cv ? 'var(--gold)' : 'var(--border-soft)'}`,
+                    color: cv ? 'var(--gold)' : 'var(--white-dim)',
+                    fontSize: '13px',
+                    cursor: demoClosed ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'all 0.2s',
+                    opacity: demoClosed ? 0.6 : 1,
+                  }}
+                  disabled={demoClosed}
+                >
                   {cv ? cv.name : 'Click to upload CV (PDF, DOC)'}
                 </button>
               </div>
@@ -143,15 +281,55 @@ export default function CandidatePortal() {
               <div>
                 <label style={labelStyle}>{t('candidate.voiceIntro')}</label>
                 <p style={{ fontSize: '12px', color: 'var(--white-dim)', marginBottom: '8px' }}>{t('candidate.voiceNote')}</p>
-                <input ref={voiceRef} type="file" accept="audio/*" onChange={e => setVoice(e.target.files?.[0] || null)} style={{ display: 'none' }} />
-                <button type="button" onClick={() => voiceRef.current?.click()} style={{ width: '100%', padding: '16px', background: 'var(--navy-mid)', border: `1px dashed ${voice ? 'var(--gold)' : 'rgba(200,169,110,0.3)'}`, color: voice ? 'var(--gold)' : 'var(--gold-dim)', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <input
+                  ref={voiceRef}
+                  type="file"
+                  accept="audio/*"
+                  onChange={e => !demoClosed && setVoice(e.target.files?.[0] || null)}
+                  style={{ display: 'none' }}
+                  disabled={demoClosed}
+                />
+                <button
+                  type="button"
+                  onClick={() => !demoClosed && voiceRef.current?.click()}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    background: 'var(--navy-mid)',
+                    border: `1px dashed ${voice ? 'var(--gold)' : 'rgba(200,169,110,0.3)'}`,
+                    color: voice ? 'var(--gold)' : 'var(--gold-dim)',
+                    fontSize: '13px',
+                    cursor: demoClosed ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit',
+                    opacity: demoClosed ? 0.6 : 1,
+                  }}
+                  disabled={demoClosed}
+                >
                   {voice ? voice.name : 'Click to upload voice intro (audio file, max 1 min)'}
                 </button>
               </div>
 
               {error && <div style={{ padding: '12px', background: 'rgba(220,80,80,0.1)', border: '1px solid rgba(220,80,80,0.3)', color: '#E05050', fontSize: '13px' }}>{error}</div>}
 
-              <button type="submit" disabled={loading} style={{ width: '100%', padding: '16px', background: loading ? 'rgba(200,169,110,0.4)' : 'var(--gold)', border: '1px solid var(--gold)', color: 'var(--navy)', fontSize: '14px', fontWeight: 600, cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <button
+                type="submit"
+                disabled={loading || demoClosed}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: loading || demoClosed ? 'rgba(200,169,110,0.4)' : 'var(--gold)',
+                  border: '1px solid var(--gold)',
+                  color: 'var(--navy)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: (loading || demoClosed) ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
                 {loading ? t('candidate.submitting') : t('candidate.submit')}
                 {!loading && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
               </button>
@@ -160,6 +338,7 @@ export default function CandidatePortal() {
         </div>
       </div>
       <Footer />
+      <AutoDemoModal onModalClose={handleModalClose} />
     </>
   )
 }

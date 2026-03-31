@@ -5,8 +5,12 @@ const nextConfig = {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
   },
   images: {
-    domains: ['virtuhire-files.s3.amazonaws.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'virtuhire-files.s3.amazonaws.com',
+      },
+    ],
   },
 }
-
 module.exports = nextConfig
