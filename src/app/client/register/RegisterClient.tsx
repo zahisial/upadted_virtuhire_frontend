@@ -1,24 +1,23 @@
-'use client'
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { useLanguage } from '@/context/LanguageContext'
-import { useAuth } from '@/context/AuthContext'
-import AutoDemoModal from '@/components/AutoDemoModal'
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
+import AutoDemoModal from '@/components/AutoDemoModal';
 
-export default function RegisterPage() {
-  const { t, isRTL } = useLanguage()
-  const { register } = useAuth()
-  const router = useRouter()
-  const [accountType, setAccountType] = useState<'individual' | 'corporate'>('individual')
-  const [form, setForm] = useState({ email: '', password: '', phone: '', fullName: '', companyName: '', vatNumber: '', contactPerson: '' })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [focused, setFocused] = useState('')
-  const [demoClosed, setDemoClosed] = useState(false)
-  const [countdown, setCountdown] = useState(5)
+export default function RegisterClient() {
+  const { t, isRTL } = useLanguage();
+  const { register } = useAuth();
+  const router = useRouter();
+  const [accountType, setAccountType] = useState<'individual' | 'corporate'>('individual');
+  const [form, setForm] = useState({ email: '', password: '', phone: '', fullName: '', companyName: '', vatNumber: '', contactPerson: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState('');
+  const [demoClosed, setDemoClosed] = useState(false);
+  const [countdown, setCountdown] = useState(5);
 
-  // Redirect after 5 seconds when demoClosed becomes true
   useEffect(() => {
     if (demoClosed) {
       const timer = setInterval(() => {
@@ -35,89 +34,98 @@ export default function RegisterPage() {
     }
   }, [demoClosed, router]);
 
-  const handleModalClose = () => {
-    setDemoClosed(true);
-  };
+  const handleModalClose = () => setDemoClosed(true);
 
-  const handleInput = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }))
+  const handleInput = (key: string, val: string) => setForm(f => ({ ...f, [key]: val }));
 
-  const inputStyle = (f: boolean): React.CSSProperties => ({
-    width: '100%', padding: '12px 16px', background: 'var(--navy-mid)',
-    border: `1px solid ${f ? 'var(--gold)' : 'var(--border-soft)'}`,
-    color: 'var(--white)', fontSize: '14px', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.2s',
+  const inputStyle = (focused: boolean): React.CSSProperties => ({
+    width: '100%',
+    padding: '12px 16px',
+    background: 'var(--navy-mid)',
+    border: `1px solid ${focused ? 'var(--gold)' : 'var(--border-soft)'}`,
+    color: 'var(--white)',
+    fontSize: '14px',
+    fontFamily: 'inherit',
+    outline: 'none',
+    transition: 'border-color 0.2s',
     opacity: demoClosed ? 0.6 : 1,
     cursor: demoClosed ? 'not-allowed' : 'auto',
-  })
-  const labelStyle: React.CSSProperties = { display: 'block', fontSize: '12px', fontWeight: 500, color: 'var(--white-dim)', marginBottom: '8px', letterSpacing: '0.5px', textTransform: 'uppercase' }
+  });
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '12px',
+    fontWeight: 500,
+    color: 'var(--white-dim)',
+    marginBottom: '8px',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (demoClosed) return;
-    setLoading(true); setError('')
+    setLoading(true);
+    setError('');
     try {
       await register({
-        email: form.email, password: form.password, phone: form.phone, role: 'client',
-        account_type: accountType, full_name: form.fullName,
-        company_name: form.companyName, vat_number: form.vatNumber, contact_person: form.contactPerson,
-      })
-      router.push(`/verify?email=${encodeURIComponent(form.email)}`)
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+        role: 'client',
+        account_type: accountType,
+        full_name: form.fullName,
+        company_name: form.companyName,
+        vat_number: form.vatNumber,
+        contact_person: form.contactPerson,
+      });
+      router.push(`/verify?email=${encodeURIComponent(form.email)}`);
     } catch (err: any) {
-      setError(err?.email?.[0] || err?.detail || 'Registration failed')
-    } finally { setLoading(false) }
-  }
+      setError(err?.email?.[0] || err?.detail || 'Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
-      <div style={{ maxWidth: '560px', margin: '0 auto', padding: '0 5%' }} dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="max-w-lg mx-auto px-5" dir={isRTL ? 'rtl' : 'ltr'}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <div style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--gold-dim)', marginBottom: '12px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ width: '16px', height: '1px', background: 'var(--gold-dim)', display: 'block' }} />
+          <div className="flex items-center gap-2 text-[11px] tracking-[3px] uppercase text-[var(--gold-dim)] mb-3">
+            <span className="w-4 h-px bg-[var(--gold-dim)]" />
             {t('register.step')}
           </div>
-          <h1 className="font-display" style={{ fontSize: 'clamp(32px, 4vw, 44px)', fontWeight: 300, color: 'var(--white)', lineHeight: 1.2, marginBottom: '12px' }}>{t('register.title')}</h1>
-          <p style={{ fontSize: '14px', color: 'var(--white-dim)', lineHeight: 1.7, marginBottom: '32px' }}>{t('register.description')}</p>
+          <h1 className="font-display text-3xl md:text-4xl font-light text-white mb-3">
+            {t('register.title')}
+          </h1>
+          <p className="text-sm text-[var(--white-dim)] mb-8">
+            {t('register.description')}
+          </p>
 
-          {/* Demo ending message */}
           {demoClosed && (
-            <div style={{
-              background: 'rgba(200,169,110,0.1)',
-              border: '1px solid var(--gold)',
-              padding: '12px',
-              marginBottom: '24px',
-              textAlign: 'center',
-              color: 'var(--gold)',
-              fontSize: '14px',
-              fontWeight: 500
-            }}>
+            <div className="bg-[rgba(200,169,110,0.1)] border border-[var(--gold)] p-3 mb-6 text-center text-[var(--gold)] text-sm font-medium">
               Demo mode ended. Redirecting to homepage in {countdown} seconds...
             </div>
           )}
 
-          {/* Account Type Toggle */}
-          <div style={{ display: 'flex', gap: '2px', marginBottom: '28px', background: 'var(--navy-card)', padding: '4px', border: '1px solid var(--border-soft)', width: 'fit-content' }}>
+          <div className="flex gap-1 mb-7 bg-[var(--navy-card)] p-1 border border-[var(--border-soft)] w-fit">
             {(['individual', 'corporate'] as const).map(type => (
               <button
                 key={type}
                 onClick={() => !demoClosed && setAccountType(type)}
-                style={{
-                  padding: '10px 24px',
-                  background: accountType === type ? 'var(--navy-light)' : 'transparent',
-                  border: accountType === type ? '1px solid var(--border)' : '1px solid transparent',
-                  color: accountType === type ? 'var(--gold)' : 'var(--white-dim)',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  cursor: demoClosed ? 'not-allowed' : 'pointer',
-                  fontFamily: 'inherit',
-                  opacity: demoClosed ? 0.6 : 1,
-                }}
                 disabled={demoClosed}
+                className={`px-6 py-2 text-sm font-medium transition ${
+                  accountType === type
+                    ? 'bg-[var(--navy-light)] border border-[var(--border)] text-[var(--gold)]'
+                    : 'bg-transparent border border-transparent text-[var(--white-dim)]'
+                } ${demoClosed ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
               >
                 {t(`register.${type}`)}
               </button>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {accountType === 'individual' ? (
               <div>
                 <label style={labelStyle}>{t('register.fullName')}</label>
@@ -145,7 +153,7 @@ export default function RegisterPage() {
                     required
                   />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label style={labelStyle}>{t('register.vatNumber')}</label>
                     <input
@@ -171,6 +179,7 @@ export default function RegisterPage() {
                 </div>
               </>
             )}
+
             <div>
               <label style={labelStyle}>{t('register.email')}</label>
               <input
@@ -185,7 +194,8 @@ export default function RegisterPage() {
                 required
               />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label style={labelStyle}>{t('register.phone')}</label>
                 <input
@@ -214,36 +224,39 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
-            {error && <div style={{ padding: '12px', background: 'rgba(220,80,80,0.1)', border: '1px solid rgba(220,80,80,0.3)', color: '#E05050', fontSize: '13px' }}>{error}</div>}
+
+            {error && (
+              <div className="p-3 bg-[rgba(220,80,80,0.1)] border border-[rgba(220,80,80,0.3)] text-[#E05050] text-sm">
+                {error}
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading || demoClosed}
-              style={{
-                width: '100%',
-                padding: '16px',
-                background: (loading || demoClosed) ? 'rgba(200,169,110,0.4)' : 'var(--gold)',
-                border: '1px solid var(--gold)',
-                color: 'var(--navy)',
-                fontSize: '14px',
-                fontWeight: 600,
-                cursor: (loading || demoClosed) ? 'not-allowed' : 'pointer',
-                fontFamily: 'inherit',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-              }}
+              className={`w-full py-4 border font-semibold text-sm flex items-center justify-center gap-2 transition ${
+                loading || demoClosed
+                  ? 'bg-[rgba(200,169,110,0.4)] border-[var(--gold)] text-[var(--navy)] cursor-not-allowed'
+                  : 'bg-[var(--gold)] border-[var(--gold)] text-[var(--navy)] cursor-pointer hover:bg-[var(--gold-light)]'
+              }`}
             >
               {loading ? 'Creating...' : t('register.next')}
-              {!loading && <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>}
+              {!loading && (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              )}
             </button>
-            <div style={{ textAlign: 'center' }}>
-              <a href="/login" style={{ color: 'var(--gold)', fontSize: '13px', textDecoration: 'none', opacity: demoClosed ? 0.6 : 1, pointerEvents: demoClosed ? 'none' : 'auto' }}>{t('register.haveAccount')}</a>
+
+            <div className="text-center">
+              <a href="/login" className={`text-[var(--gold)] text-sm no-underline ${demoClosed ? 'opacity-60 pointer-events-none' : ''}`}>
+                {t('register.haveAccount')}
+              </a>
             </div>
           </form>
         </motion.div>
       </div>
       <AutoDemoModal onModalClose={handleModalClose} />
     </>
-  )
+  );
 }

@@ -1,27 +1,20 @@
-'use client'
-import Link from 'next/link'
-import { useLanguage } from '@/context/LanguageContext'
+'use client';
+import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function CTASection() {
-  const { t, isRTL } = useLanguage()
+  const { t, isRTL } = useLanguage();
   return (
-    <section style={{ padding: '100px 5%', textAlign: 'center' }} dir={isRTL ? 'rtl' : 'ltr'}>
-      <h2 className="font-display" style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 300, color: 'var(--white)', marginBottom: '16px' }}>{t('cta.title')}</h2>
-      <p style={{ fontSize: '15px', color: 'var(--white-dim)', marginBottom: '32px' }}>{t('cta.subtitle')}</p>
+    <section className="py-16 md:py-24 px-5 text-center" dir={isRTL ? 'rtl' : 'ltr'}>
+      <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-light text-white mb-4">
+        {t('cta.title')}
+      </h2>
+      <p className="text-base text-[var(--white-dim)] max-w-2xl mx-auto mb-8">
+        {t('cta.subtitle')}
+      </p>
       <Link
         href="/client/register?demo=true"
-        style={{
-          padding: '16px 40px',
-          background: 'var(--gold)',
-          border: '1px solid var(--gold)',
-          color: 'var(--navy)',
-          fontSize: '14px',
-          fontWeight: 600,
-          textDecoration: 'none',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}
+        className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--gold)] border border-[var(--gold)] text-[var(--navy)] text-sm font-semibold"
       >
         {t('cta.button')}
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -29,5 +22,5 @@ export default function CTASection() {
         </svg>
       </Link>
     </section>
-  )
+  );
 }
