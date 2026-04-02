@@ -38,6 +38,17 @@ body {
   line-height: 1.7;
   overflow-x: hidden;
 }
+/* globals.css */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  width: 100vw; /* Explicitly lock to viewport width */
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden; /* Prevent the pseudo-element from leaking */
+}
 
 [dir="rtl"] body, [dir="rtl"] { font-family: var(--font-arabic); }
 [dir="rtl"] .font-display { font-family: var(--font-arabic); font-weight: 300; letter-spacing: 0; }

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -11,8 +11,8 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Check screen width
-  useEffect(() => {
+  // Check screen width immediately and on resize
+  useLayoutEffect(() => {
     const checkScreen = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -30,10 +30,10 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 w-[100vw] max-w-screen z-50 h-[72px] px-4 md:px-5 bg-[rgba(8,13,26,0.92)] backdrop-blur-lg border-b border-[var(--border-soft)] flex items-center justify-between ">
+      <header className="fixed top-0 left-0 right-0 w-full max-w-screen z-50 h-[72px] px-4 md:px-5 bg-[rgba(8,13,26,0.92)] backdrop-blur-lg border-b border-[var(--border-soft)] flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 no-underline shrink-0">
           <div className="w-9 h-9 border-2 border-[var(--gold)] flex items-center justify-center font-serif text-lg font-semibold text-[var(--gold)]">V</div>
-          <span className="font-medium text-[17px] text-white">Virtu<span className="text-[var(--gold)]">Hire</span></span>
+          <span className="font-medium text-[17px] text-white whitespace-nowrap">Virtu<span className="text-[var(--gold)]">Hire</span></span>
         </Link>
 
         {/* Desktop navigation */}
@@ -87,7 +87,7 @@ export default function Navbar() {
           )}
         </nav>
 
-        {/* Mobile menu button - conditionally rendered based on isMobile */}
+        {/* Mobile menu button – always visible on mobile */}
         {isMobile && (
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -121,7 +121,7 @@ export default function Navbar() {
             mobileMenuOpen ? 'max-h-[calc(100vh-72px)] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
           }`}
         >
-          <div className="flex flex-col p-5 gap-4 overflow-y-auto max-h-[calc(100vh-72px)] w-[100vw] ">
+          <div className="flex flex-col p-5 gap-4 overflow-y-auto max-h-[calc(100vh-72px)]">
             <a
               href="#how"
               onClick={() => setMobileMenuOpen(false)}

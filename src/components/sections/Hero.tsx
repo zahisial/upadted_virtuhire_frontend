@@ -6,8 +6,8 @@ export default function Hero() {
   const { t, isRTL } = useLanguage();
 
   return (
-    <section className="min-h-screen flex items-center justify-center py-24 px-5 relative" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-[rgba(200,169,110,0.06)]" />
+    <section className="min-h-screen flex items-center justify-center py-24 px-5 relative overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] md:w-[600px] h-[600px] rounded-full border border-[rgba(200,169,110,0.06)]" />
       <div className="text-center max-w-3xl relative z-10 px-4">
         <div className="flex items-center justify-center gap-3 text-[11px] tracking-[3px] uppercase text-[var(--gold-dim)] mb-5">
           <span className="w-6 h-px bg-[var(--gold-dim)]" />
